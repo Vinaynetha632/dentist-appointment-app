@@ -1,30 +1,25 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const Dentist = require('../models/Dentist');
+const Dentist = require("../models/Dentist");
 
-router.get('/', (req, res) => {
-    Dentist.getAll((err, rows) => {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        res.json(rows);
-    });
+router.get("/", (req, res) => {
+  try {
+    const rows = Dentist.getAll();
+    res.json(rows);
+  } catch (err) {
+    console.error("Dentist fetch error:", err);
+    res.status(500).json({ error: "Failed to load dentists" });
+  }
 });
 
-router.post('/', (req, res) => {
-    const { name, photo, qualification, experience, clinicName, address, location } = req.body;
-    if (!name || !photo || !qualification || !experience || !clinicName || !address || !location) {
-        return res.status(400).json({ error: 'All fields are required' });
-    }
-    
-    Dentist.create(req.body, (err, id) => {
-        if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-        }
-        res.status(201).json({ message: 'Dentist created successfully', id });
-    });
+router.post("/", (req, res) => {
+  try {
+    const id = Dentist.create(req.body);
+    res.status(201).json({ message: "Dentist created", id });
+  } catch (err) {
+    console.error("Dentist create error:", err);
+    res.status(500).json({ error: "Insert failed" });
+  }
 });
 
 module.exports = router;

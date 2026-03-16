@@ -3,59 +3,65 @@ const path = require("path");
 
 const dbPath = path.join(__dirname, "database.sqlite");
 
-console.log("📦 Opening database at:", dbPath);
+console.log("📦 Opening database:", dbPath);
 
 const db = new Database(dbPath);
 
+/* Enable FK safely */
+db.pragma("foreign_keys = ON");
+
 /* Create tables */
 
-db.prepare(`
+db.exec(`
 CREATE TABLE IF NOT EXISTS dentists (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    name TEXT NOT NULL,
-    photo TEXT NOT NULL,
-    qualification TEXT NOT NULL,
-    experience INTEGER NOT NULL,
-    clinicName TEXT NOT NULL,
-    address TEXT NOT NULL,
-    location TEXT NOT NULL
-)
-`).run();
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  name TEXT,
+  photo TEXT,
+  qualification TEXT,
+  experience INTEGER,
+  clinicName TEXT,
+  address TEXT,
+  location TEXT
+);
 
-db.prepare(`
 CREATE TABLE IF NOT EXISTS appointments (
-    id INTEGER PRIMARY KEY AUTOINCREMENT,
-    patientName TEXT NOT NULL,
-    dob TEXT NOT NULL,
-    gender TEXT NOT NULL,
-    date TEXT NOT NULL,
-    dentistId INTEGER,
-    dentistName TEXT,
-    clinicName TEXT,
-    status TEXT DEFAULT 'Booked'
-)
-`).run();
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  patientName TEXT,
+  dob TEXT,
+  gender TEXT,
+  date TEXT,
+  dentistId INTEGER,
+  dentistName TEXT,
+  clinicName TEXT,
+  status TEXT DEFAULT 'Booked'
+);
+`);
 
-/* ⭐ Seed ONLY if empty (VERY IMPORTANT) */
+/* ⭐ SEED ONLY ON VERY FIRST DEPLOY */
 
-const row = db.prepare("SELECT COUNT(*) as count FROM dentists").get();
+try {
+  const count = db.prepare("SELECT COUNT(*) as c FROM dentists").get();
 
-if (row.count === 0) {
-    console.log("🌱 First time seeding dentists...");
+  if (count.c === 0) {
+    console.log("🌱 First deploy seed");
 
     const insert = db.prepare(`
-    INSERT INTO dentists
-    (name, photo, qualification, experience, clinicName, address, location)
-    VALUES (?,?,?,?,?,?,?)
+      INSERT INTO dentists
+      (name, photo, qualification, experience, clinicName, address, location)
+      VALUES (?,?,?,?,?,?,?)
     `);
 
-    insert.run("Dr. Sarah Jenkins", "/images/dentist1.jpg", "BDS, MDS - Periodontology", 12, "Smile Care Clinic", "Jubilee Hills", "Hyderabad");
-    insert.run("Dr. Michael Chen", "/images/dentist2.jpg", "BDS - Endodontics", 8, "Perfect Teeth Center", "Indiranagar", "Bangalore");
-    insert.run("Dr. Emily Patel", "/images/dentist3.jpg", "DDS, Orthodontist", 15, "Align Orthodontics", "Connaught Place", "Delhi");
-    insert.run("Dr. John Smith", "/images/dentist4.jpg", "BDS, General Dentistry", 5, "Family Dental Rx", "Bandra West", "Mumbai");
-    insert.run("Dr. Lisa Ray", "/images/dentist5.jpg", "DDS, Pediatric Dentistry", 10, "Kids Smiles", "T Nagar", "Chennai");
+    insert.run("Dr. Sarah Jenkins", "/images/dentist1.jpg", "BDS, MDS", 12, "Smile Care Clinic", "Jubilee Hills", "Hyderabad");
+    insert.run("Dr. Michael Chen", "/images/dentist2.jpg", "BDS", 8, "Perfect Teeth Center", "Indiranagar", "Bangalore");
+    insert.run("Dr. Emily Patel", "/images/dentist3.jpg", "DDS", 15, "Align Orthodontics", "Connaught Place", "Delhi");
+    insert.run("Dr. John Smith", "/images/dentist4.jpg", "BDS", 5, "Family Dental Rx", "Bandra", "Mumbai");
+    insert.run("Dr. Lisa Ray", "/images/dentist5.jpg", "DDS", 10, "Kids Smiles", "T Nagar", "Chennai");
+  }
+
+} catch (e) {
+  console.error("❌ DB seed error:", e);
 }
 
-console.log("✅ Database ready");
+console.log("✅ DB Ready");
 
 module.exports = db;
