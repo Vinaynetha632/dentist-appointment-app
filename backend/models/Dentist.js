@@ -8,7 +8,8 @@ router.get('/', (req, res) => {
         const dentists = Dentist.getAll();
         res.json(dentists);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error("🔥 DENTIST API ERROR:", err);
+        res.status(500).json({ error: err.message || "Server crash" });
     }
 });
 
