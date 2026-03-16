@@ -16,7 +16,7 @@ export default function AdminPanel() {
 
   useEffect(() => {
     axios
-      .get(`${API_BASE}/api/appointments`)
+     .get("/api/appointments")
       .then((res) => {
         setAppointments(res.data);
         setLoading(false);

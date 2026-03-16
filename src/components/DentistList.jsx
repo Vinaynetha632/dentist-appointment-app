@@ -9,7 +9,7 @@ export default function DentistList() {
     const [error, setError] = useState(null);
 
     useEffect(() => {
-       axios.get(`${API_BASE}/api/dentists`)
+      axios.get("/api/dentists")
             .then(res => {
                 setDentists(res.data);
                 setLoading(false);

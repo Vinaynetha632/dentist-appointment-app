@@ -33,12 +33,12 @@ export default function BookAppointment() {
         setStatus({ loading: true, success: false, error: null });
         console.log(formData);
         try {
-            await axios.post('http://localhost:5555/api/appointments', {
+            axios.get("/api/appointments"), {
                 ...formData,
                 dentistId: dentist.id,
                 dentistName: dentist.name,
                 clinicName: dentist.clinicName
-            });
+            };
             setStatus({ loading: false, success: true, error: null });
             setTimeout(() => {
                 navigate('/');
