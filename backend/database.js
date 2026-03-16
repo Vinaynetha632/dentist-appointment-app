@@ -9,8 +9,7 @@ const db = new Database(dbPath);
 
 /* Create tables */
 
-db.prepare(
-  `
+db.prepare(`
 CREATE TABLE IF NOT EXISTS dentists (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
@@ -21,11 +20,9 @@ CREATE TABLE IF NOT EXISTS dentists (
     address TEXT NOT NULL,
     location TEXT NOT NULL
 )
-`,
-).run();
+`).run();
 
-db.prepare(
-  `
+db.prepare(`
 CREATE TABLE IF NOT EXISTS appointments (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     patientName TEXT NOT NULL,
@@ -37,71 +34,28 @@ CREATE TABLE IF NOT EXISTS appointments (
     clinicName TEXT,
     status TEXT DEFAULT 'Booked'
 )
-`,
-).run();
+`).run();
 
-/* Seed dentists (local images) */
+/* ⭐ Seed ONLY if empty (VERY IMPORTANT) */
 
-/* SAFE RESET FOR RENDER DEPLOY */
+const row = db.prepare("SELECT COUNT(*) as count FROM dentists").get();
 
-db.exec("PRAGMA foreign_keys = OFF");
+if (row.count === 0) {
+    console.log("🌱 First time seeding dentists...");
 
-db.prepare("DELETE FROM appointments").run();
-db.prepare("DELETE FROM dentists").run();
+    const insert = db.prepare(`
+    INSERT INTO dentists
+    (name, photo, qualification, experience, clinicName, address, location)
+    VALUES (?,?,?,?,?,?,?)
+    `);
 
-db.exec("PRAGMA foreign_keys = ON");
-const insert = db.prepare(`
-INSERT INTO dentists
-(name, photo, qualification, experience, clinicName, address, location)
-VALUES (?,?,?,?,?,?,?)
-`);
+    insert.run("Dr. Sarah Jenkins", "/images/dentist1.jpg", "BDS, MDS - Periodontology", 12, "Smile Care Clinic", "Jubilee Hills", "Hyderabad");
+    insert.run("Dr. Michael Chen", "/images/dentist2.jpg", "BDS - Endodontics", 8, "Perfect Teeth Center", "Indiranagar", "Bangalore");
+    insert.run("Dr. Emily Patel", "/images/dentist3.jpg", "DDS, Orthodontist", 15, "Align Orthodontics", "Connaught Place", "Delhi");
+    insert.run("Dr. John Smith", "/images/dentist4.jpg", "BDS, General Dentistry", 5, "Family Dental Rx", "Bandra West", "Mumbai");
+    insert.run("Dr. Lisa Ray", "/images/dentist5.jpg", "DDS, Pediatric Dentistry", 10, "Kids Smiles", "T Nagar", "Chennai");
+}
 
-insert.run(
-  "Dr. Sarah Jenkins",
-  "/images/dentist1.jpg",
-  "BDS, MDS - Periodontology",
-  12,
-  "Smile Care Clinic",
-  "Jubilee Hills",
-  "Hyderabad",
-);
-insert.run(
-  "Dr. Michael Chen",
-  "/images/dentist2.jpg",
-  "BDS - Endodontics",
-  8,
-  "Perfect Teeth Center",
-  "Indiranagar",
-  "Bangalore",
-);
-insert.run(
-  "Dr. Emily Patel",
-  "/images/dentist3.jpg",
-  "DDS, Orthodontist",
-  15,
-  "Align Orthodontics",
-  "Connaught Place",
-  "Delhi",
-);
-insert.run(
-  "Dr. John Smith",
-  "/images/dentist4.jpg",
-  "BDS, General Dentistry",
-  5,
-  "Family Dental Rx",
-  "Bandra West",
-  "Mumbai",
-);
-insert.run(
-  "Dr. Lisa Ray",
-  "/images/dentist5.jpg",
-  "DDS, Pediatric Dentistry",
-  10,
-  "Kids Smiles",
-  "T Nagar",
-  "Chennai",
-);
-
-console.log("✅ Database ready with local dentist images");
+console.log("✅ Database ready");
 
 module.exports = db;
