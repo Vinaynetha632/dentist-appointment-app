@@ -1,48 +1,38 @@
-const db = require('../database');
+const express = require('express');
+const router = express.Router();
+const Dentist = require('../models/Dentist');
 
-class Dentist {
-
-    static getAll() {
-        try {
-            const rows = db.prepare("SELECT * FROM dentists").all();
-            return rows;
-        } catch (err) {
-            throw err;
-        }
+/* GET all dentists */
+router.get('/', (req, res) => {
+    try {
+        const dentists = Dentist.getAll();
+        res.json(dentists);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
+});
 
-    static getById(id) {
-        try {
-            const row = db.prepare("SELECT * FROM dentists WHERE id = ?").get(id);
-            return row;
-        } catch (err) {
-            throw err;
+/* GET dentist by id */
+router.get('/:id', (req, res) => {
+    try {
+        const dentist = Dentist.getById(req.params.id);
+        if (!dentist) {
+            return res.status(404).json({ error: "Dentist not found" });
         }
+        res.json(dentist);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
+});
 
-    static create(data) {
-        try {
-            const stmt = db.prepare(`
-                INSERT INTO dentists 
-                (name, photo, qualification, experience, clinicName, address, location) 
-                VALUES (?,?,?,?,?,?,?)
-            `);
-
-            const info = stmt.run(
-                data.name,
-                data.photo,
-                data.qualification,
-                data.experience,
-                data.clinicName,
-                data.address,
-                data.location
-            );
-
-            return info.lastInsertRowid;
-        } catch (err) {
-            throw err;
-        }
+/* CREATE dentist (optional admin feature) */
+router.post('/', (req, res) => {
+    try {
+        const id = Dentist.create(req.body);
+        res.status(201).json({ message: "Dentist created", id });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
-}
+});
 
-module.exports = Dentist;
+module.exports = router;
