@@ -1,46 +1,33 @@
-const express = require("express");
-const router = express.Router();
-const Appointment = require("../models/Appointment");
+const db = require("../database");
 
-/* ⭐ GET all appointments */
-router.get("/", (req, res) => {
-  try {
-    const appointments = Appointment.getAll();
+class Appointment {
 
-    if (!appointments) {
-      return res.json([]);
-    }
-
-    res.json(appointments);
-
-  } catch (err) {
-    console.error("❌ Appointment fetch error:", err);
-    res.status(500).json({ error: "Database fetch failed" });
+  static getAll() {
+    const stmt = db.prepare(
+      "SELECT * FROM appointments ORDER BY id DESC"
+    );
+    return stmt.all();
   }
-});
 
-/* ⭐ CREATE appointment */
-router.post("/", (req, res) => {
-  try {
-    const { patientName, dob, gender, date } = req.body;
+  static create(data) {
+    const stmt = db.prepare(`
+      INSERT INTO appointments
+      (patientName, dob, gender, date, dentistId, dentistName, clinicName)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+    `);
 
-    if (!patientName || !dob || !gender || !date) {
-      return res.status(400).json({
-        error: "Patient Name, DOB, Gender and Date are required"
-      });
-    }
+    const result = stmt.run(
+      data.patientName,
+      data.dob,
+      data.gender,
+      data.date,
+      data.dentistId || null,
+      data.dentistName || null,
+      data.clinicName || null
+    );
 
-    const id = Appointment.create(req.body);
-
-    res.status(201).json({
-      message: "Appointment booked successfully",
-      id
-    });
-
-  } catch (err) {
-    console.error("❌ Appointment create error:", err);
-    res.status(500).json({ error: "Insert failed" });
+    return result.lastInsertRowid;
   }
-});
+}
 
-module.exports = router;
+module.exports = Appointment;
