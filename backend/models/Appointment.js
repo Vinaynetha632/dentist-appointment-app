@@ -1,37 +1,47 @@
-const db = require("../database");
+const mongoose = require('mongoose');
+require('../database');
+
+const appointmentSchema = new mongoose.Schema({
+  patientName: String,
+  dob: String,
+  gender: String,
+  date: String,
+  dentistId: String,
+  dentistName: String,
+  clinicName: String,
+  status: { type: String, default: 'Booked' }
+}, { timestamps: true });
+
+const AppointmentModel = mongoose.models.Appointment || mongoose.model('Appointment', appointmentSchema);
 
 class Appointment {
-  static getAll() {
+  static async getAll() {
     try {
-      const stmt = db.prepare("SELECT * FROM appointments ORDER BY id DESC");
-      return stmt.all();
+      const appointments = await AppointmentModel.find({}).sort({ createdAt: -1 }).lean();
+      return appointments.map(app => ({ ...app, id: app._id }));
     } catch (err) {
-      console.log("GET APPOINTMENTS ERROR:", err);
+      console.error('GET APPOINTMENTS ERROR:', err);
       return [];
     }
   }
 
-  static create(data) {
+  static async create(data) {
     try {
-      const stmt = db.prepare(`
-        INSERT INTO appointments
-        (patientName, dob, gender, date, dentistId, dentistName, clinicName)
-        VALUES (?, ?, ?, ?, ?, ?, ?)
-      `);
-
-      const result = stmt.run(
-        data.patientName || "",
-        data.dob || "",
-        data.gender || "",
-        data.date || "",
-        Number(data.dentistId) || 1,
-        data.dentistName || "",
-        data.clinicName || "",
-      );
-
-      return result.lastInsertRowid;
+      const newAppointment = new AppointmentModel({
+        patientName: data.patientName || '',
+        dob: data.dob || '',
+        gender: data.gender || '',
+        date: data.date || '',
+        dentistId: data.dentistId ? String(data.dentistId) : null,
+        dentistName: data.dentistName || '',
+        clinicName: data.clinicName || '',
+        status: data.status || 'Booked'
+      });
+      
+      const saved = await newAppointment.save();
+      return saved._id;
     } catch (err) {
-      console.log("INSERT ERROR:", err);
+      console.error('INSERT APPOINTMENT ERROR:', err);
       throw err;
     }
   }

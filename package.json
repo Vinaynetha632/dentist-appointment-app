@@ -8,20 +8,19 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "start": "node server.js",
+    "start": "node backend/server.js",
     "backend": "node backend/server.js"
   },
   "dependencies": {
     "axios": "^1.13.6",
-    "better-sqlite3": "^12.8.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
     "express": "^4.19.2",
     "lucide-react": "^0.577.0",
+    "mongoose": "^9.3.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
-    "react-router-dom": "^7.13.1",
-    "sqlite": "^5.1.1"
+    "react-router-dom": "^7.13.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.39.4",

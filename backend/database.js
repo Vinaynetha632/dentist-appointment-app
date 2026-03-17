@@ -1,67 +1,48 @@
-const Database = require("better-sqlite3");
-const path = require("path");
+require('dotenv').config({ path: require('path').join(__dirname, '..', '.env') });
+const mongoose = require('mongoose');
 
-const dbPath = path.join(__dirname, "database.sqlite");
+// Use the URL from the environment variable (you will set this on Render)
+// Or use a local fallback if needed (though it's best to rely on the environment variable)
+const MONGODB_URI = process.env.MONGODB_URI;
 
-console.log("📦 Opening database:", dbPath);
-
-const db = new Database(dbPath);
-
-/* Enable FK safely */
-db.pragma("foreign_keys = OFF");
-
-/* Create tables */
-
-db.exec(`
-CREATE TABLE IF NOT EXISTS dentists (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  name TEXT,
-  photo TEXT,
-  qualification TEXT,
-  experience INTEGER,
-  clinicName TEXT,
-  address TEXT,
-  location TEXT
-);
-
-CREATE TABLE IF NOT EXISTS appointments (
-  id INTEGER PRIMARY KEY AUTOINCREMENT,
-  patientName TEXT,
-  dob TEXT,
-  gender TEXT,
-  date TEXT,
-  dentistId INTEGER,
-  dentistName TEXT,
-  clinicName TEXT,
-  status TEXT DEFAULT 'Booked'
-);
-`);
-
-/* ⭐ SEED ONLY ON VERY FIRST DEPLOY */
-
-try {
-  const count = db.prepare("SELECT COUNT(*) as c FROM dentists").get();
-
-  if (count.c === 0) {
-    console.log("🌱 First deploy seed");
-
-    const insert = db.prepare(`
-      INSERT INTO dentists
-      (name, photo, qualification, experience, clinicName, address, location)
-      VALUES (?,?,?,?,?,?,?)
-    `);
-
-    insert.run("Dr. Sarah Jenkins", "/images/dentist1.jpg", "BDS, MDS", 12, "Smile Care Clinic", "Jubilee Hills", "Hyderabad");
-    insert.run("Dr. Michael Chen", "/images/dentist2.jpg", "BDS", 8, "Perfect Teeth Center", "Indiranagar", "Bangalore");
-    insert.run("Dr. Emily Patel", "/images/dentist3.jpg", "DDS", 15, "Align Orthodontics", "Connaught Place", "Delhi");
-    insert.run("Dr. John Smith", "/images/dentist4.jpg", "BDS", 5, "Family Dental Rx", "Bandra", "Mumbai");
-    insert.run("Dr. Lisa Ray", "/images/dentist5.jpg", "DDS", 10, "Kids Smiles", "T Nagar", "Chennai");
-  }
-
-} catch (e) {
-  console.error("❌ DB seed error:", e);
+if (!MONGODB_URI) {
+  console.log('⚠️ MONGODB_URI is not set in environment variables! Provide it via .env or Render dashboard.');
 }
 
-console.log("✅ DB Ready");
+mongoose.connect(MONGODB_URI || 'mongodb://localhost:27017/dentist-appointment')
+  .then(async () => {
+    console.log('📦 Connected to MongoDB successfully!');
+    
+    // Seed dentists on first deployment
+    const DentistModel = mongoose.models.Dentist || mongoose.model('Dentist', new mongoose.Schema({
+      name: String,
+      photo: String,
+      qualification: String,
+      experience: Number,
+      clinicName: String,
+      address: String,
+      location: String
+    }));
 
-module.exports = db;
+    const count = await DentistModel.countDocuments();
+    if (count === 0) {
+      console.log('🌱 First deploy seed: Ading dentists for MongoDB...');
+      const initialDentists = [
+        { name: 'Dr. Sarah Jenkins', photo: '/images/dentist1.jpg', qualification: 'BDS, MDS', experience: 12, clinicName: 'Smile Care Clinic', address: 'Jubilee Hills', location: 'Hyderabad' },
+        { name: 'Dr. Michael Chen', photo: '/images/dentist2.jpg', qualification: 'BDS', experience: 8, clinicName: 'Perfect Teeth Center', address: 'Indiranagar', location: 'Bangalore' },
+        { name: 'Dr. Emily Patel', photo: '/images/dentist3.jpg', qualification: 'DDS', experience: 15, clinicName: 'Align Orthodontics', address: 'Connaught Place', location: 'Delhi' },
+        { name: 'Dr. John Smith', photo: '/images/dentist4.jpg', qualification: 'BDS', experience: 5, clinicName: 'Family Dental Rx', address: 'Bandra', location: 'Mumbai' },
+        { name: 'Dr. Lisa Ray', photo: '/images/dentist5.jpg', qualification: 'DDS', experience: 10, clinicName: 'Kids Smiles', address: 'T Nagar', location: 'Chennai' },
+      ];
+      await DentistModel.insertMany(initialDentists);
+      console.log('✅ MongoDB Seeded with dentists!');
+    } else {
+      console.log(`✅ MongoDB found ${count} existing dentists, skipping seed.`);
+    }
+
+  })
+  .catch((err) => {
+    console.error('❌ MongoDB connection error:', err);
+  });
+
+module.exports = mongoose;
