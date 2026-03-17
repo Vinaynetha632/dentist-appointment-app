@@ -1,33 +1,40 @@
 const db = require("../database");
 
 class Appointment {
-
   static getAll() {
-    const stmt = db.prepare(
-      "SELECT * FROM appointments ORDER BY id DESC"
-    );
-    return stmt.all();
+    try {
+      const stmt = db.prepare("SELECT * FROM appointments ORDER BY id DESC");
+      return stmt.all();
+    } catch (err) {
+      console.log("GET APPOINTMENTS ERROR:", err);
+      return [];
+    }
   }
-static create(data) {
 
-  const stmt = db.prepare(`
-    INSERT INTO appointments
-    (patientName, dob, gender, date, dentistId, dentistName, clinicName)
-    VALUES (?, ?, ?, ?, ?, ?, ?)
-  `);
+  static create(data) {
+    try {
+      const stmt = db.prepare(`
+        INSERT INTO appointments
+        (patientName, dob, gender, date, dentistId, dentistName, clinicName)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+      `);
 
-  const result = stmt.run(
-    String(data.patientName),
-    String(data.dob),
-    String(data.gender),
-    String(data.date),
-    data.dentistId ? parseInt(data.dentistId) : null,
-    String(data.dentistName || ""),
-    String(data.clinicName || "")
-  );
+      const result = stmt.run(
+        data.patientName || "",
+        data.dob || "",
+        data.gender || "",
+        data.date || "",
+        Number(data.dentistId) || 1,
+        data.dentistName || "",
+        data.clinicName || "",
+      );
 
-  return result.lastInsertRowid;
-}
+      return result.lastInsertRowid;
+    } catch (err) {
+      console.log("INSERT ERROR:", err);
+      throw err;
+    }
+  }
 }
 
 module.exports = Appointment;

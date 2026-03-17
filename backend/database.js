@@ -8,7 +8,7 @@ console.log("📦 Opening database:", dbPath);
 const db = new Database(dbPath);
 
 /* Enable FK safely */
-db.pragma("foreign_keys = ON");
+db.pragma("foreign_keys = OFF");
 
 /* Create tables */
 
