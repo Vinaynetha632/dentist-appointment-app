@@ -34,14 +34,14 @@ export default function BookAppointment() {
 
     try {
         await axios.post("/api/appointments", {
-            patientName: formData.patientName,
-            dob: formData.age,
-            gender: formData.gender,
-            date: formData.date,
-            dentistId: dentist.id,
-            dentistName: dentist.name,
-            clinicName: dentist.clinicName
-        });
+  patientName: formData.patientName,
+  dob: `${formData.age}`,
+  gender: formData.gender,
+  date: formData.date,
+  dentistId: Number(dentist.id),
+  dentistName: dentist.name,
+  clinicName: dentist.clinicName
+});
 
         setStatus({ loading: false, success: true, error: null });
 
