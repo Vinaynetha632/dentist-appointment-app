@@ -1,7 +1,7 @@
 
 🦷 OroGlee Dentist Appointment Booking Platform
 
-A full-stack Dentist Appointment Booking web application built using React, Node.js, Express, and SQLite.
+A full-stack Dentist Appointment Booking web application built using React, Node.js, Express, and MongoDB.
 Users can browse verified dentists, book appointments seamlessly, and administrators can view scheduled appointments.
 
 This project was developed as part of the OroGlee Full-Stack Assignment.
@@ -22,7 +22,7 @@ Frontend: React (Vite build) served as static files by Express
 
 Backend: Node.js + Express REST API
 
-Database: SQLite (file-based relational database)
+Database: MongoDB (NoSQL database)
 
 Hosting: Render cloud platform
 
@@ -54,13 +54,13 @@ Node.js
 
 Express.js
 
-better-sqlite3 (High-performance SQLite driver)
+mongoose (MongoDB object modeling)
 
 CORS middleware
 
 🗄️ Database
 
-SQLite local file database
+MongoDB database
 
 Auto table creation on first run
 
