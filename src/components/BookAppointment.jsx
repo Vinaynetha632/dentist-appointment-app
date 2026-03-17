@@ -28,29 +28,35 @@ export default function BookAppointment() {
         setFormData({ ...formData, [e.target.name]: e.target.value });
     };
 
-    const handleSubmit = async (e) => {
-        e.preventDefault();
-        setStatus({ loading: true, success: false, error: null });
-        console.log(formData);
-        try {
-            axios.get("/api/appointments"), {
-                ...formData,
-                dentistId: dentist.id,
-                dentistName: dentist.name,
-                clinicName: dentist.clinicName
-            };
-            setStatus({ loading: false, success: true, error: null });
-            setTimeout(() => {
-                navigate('/');
-            }, 3000);
-        } catch (err) {
-            setStatus({ 
-                loading: false, 
-                success: false, 
-                error: err.response?.data?.error || 'Failed to book appointment' 
-            });
-        }
-    };
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setStatus({ loading: true, success: false, error: null });
+
+    try {
+        await axios.post("/api/appointments", {
+            patientName: formData.patientName,
+            dob: formData.age,
+            gender: formData.gender,
+            date: formData.date,
+            dentistId: dentist.id,
+            dentistName: dentist.name,
+            clinicName: dentist.clinicName
+        });
+
+        setStatus({ loading: false, success: true, error: null });
+
+        setTimeout(() => {
+            navigate('/');
+        }, 3000);
+
+    } catch (err) {
+        setStatus({
+            loading: false,
+            success: false,
+            error: err.response?.data?.error || 'Failed to book appointment'
+        });
+    }
+};
 
     if (status.success) {
         return (
